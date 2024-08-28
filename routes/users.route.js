@@ -2,7 +2,7 @@ const express = require("express");
 const route = express.Router();
 const fs = require("node:fs");
 
-const users = JSON.parse(fs.readFileSync("./users.json"));
+const users = JSON.parse(fs.readFileSync("./data/users.json"));
 
 route
   .get("/", (req, res) => {
@@ -16,7 +16,7 @@ route
       password: req.body.password,
     };
     users.push(newUser);
-    fs.writeFileSync("./users.json", JSON.stringify(users, null, 2));
+    fs.writeFileSync("./data/users.json", JSON.stringify(users, null, 2));
     res.send("User created successfully.");
   });
 
@@ -41,7 +41,7 @@ route
     user.password = password || user.password;
 
     users.splice(userIndex, 1, user);
-    fs.writeFileSync("./users.json", JSON.stringify(users, null, 2));
+    fs.writeFileSync("./data/users.json", JSON.stringify(users, null, 2));
     res.send("User updated successfully.");
   })
 
@@ -53,7 +53,7 @@ route
     }
 
     users.splice(userIndex, 1);
-    fs.writeFileSync("./users.json", JSON.stringify(users, null, 2));
+    fs.writeFileSync("./data/users.json", JSON.stringify(users, null, 2));
     res.send("User deleted successfully.");
   });
 

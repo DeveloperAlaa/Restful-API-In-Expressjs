@@ -3,7 +3,7 @@ const app = express();
 const port = 6060;
 const morgan = require("morgan");
 
-const usersRoute = require("./routes/users");
+const usersRoute = require("./routes/users.route");
 
 // a middleware that serves static files from inside a root directory
 app.use(express.static("public"));
