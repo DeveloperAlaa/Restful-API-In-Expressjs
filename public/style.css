@@ -1,0 +1,19 @@
+section {
+  padding: 1rem;
+  background-color: #e4e4e4;
+  border-radius: 1rem;
+  margin: 1rem;
+}
+
+h1 {
+  font-weight: 700;
+  color: rgb(52, 192, 52);
+}
+
+button {
+  padding: 10px;
+  background-color: #e4e4e4;
+  color: rgb(52, 192, 52);
+  border-radius: 10px;
+  margin: 1rem;
+}
