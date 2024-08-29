@@ -22,7 +22,8 @@ route
 
 route
   .get("/:id", (req, res) => {
-    const user = users.filter((user) => user.id === +req.params.id)[0];
+    const { id } = req.params;
+    const user = users.filter((user) => user.id === +id)[0];
     if (!user) {
       return res.send("User not found.");
     }
@@ -30,29 +31,33 @@ route
   })
 
   .patch("/:id", (req, res) => {
-    const userIndex = users.findIndex((user) => user.id === +req.params.id);
-    const user = users[userIndex];
+    const { id } = req.params;
+    const userToUpdateIndex = users.findIndex((user) => user.id === +id);
+    let userToUpdate = users[userToUpdateIndex];
 
-    if (!users[userIndex]) {
+    if (!userToUpdate) {
       return res.send("User not found.");
     }
-    const { email, password } = req.body;
-    user.email = email || user.email;
-    user.password = password || user.password;
 
-    users.splice(userIndex, 1, user);
+    userToUpdate = {
+      ...userToUpdate,
+      ...req.body,
+    };
+
+    users.splice(userToUpdateIndex, 1, userToUpdate);
     fs.writeFileSync("./data/users.json", JSON.stringify(users, null, 2));
     res.send("User updated successfully.");
   })
 
   .delete("/:id", (req, res) => {
-    const userIndex = users.findIndex((user) => user.id === +req.params.id);
+    const { id } = req.params;
+    const userToDeleteIndex = users.findIndex((user) => user.id === +id);
 
-    if (!users[userIndex]) {
+    if (!users[userToDeleteIndex]) {
       return res.send("User not found.");
     }
 
-    users.splice(userIndex, 1);
+    users.splice(userToDeleteIndex, 1);
     fs.writeFileSync("./data/users.json", JSON.stringify(users, null, 2));
     res.send("User deleted successfully.");
   });
