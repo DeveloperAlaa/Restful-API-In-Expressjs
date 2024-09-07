@@ -17,6 +17,14 @@ app.use(morgan("combined"));
 
 app.use("/users", usersRoute);
 
+app.use((err, req, res, next) => {
+  console.log("Error ocurred:- ", err)
+  const statusCode = err.statusCode || 500
+  res.status(statusCode)
+  res.send("Something went wrong!!!")
+
+})
+
 app.listen(port, () =>
   console.log(`Server running on http://localhost:${port}`)
 );

@@ -2,64 +2,132 @@ const express = require("express");
 const route = express.Router();
 const fs = require("node:fs");
 
-const users = JSON.parse(fs.readFileSync("./data/users.json"));
+route.use("/:id", (req, res, next) => {
+  fs.readFile("./data/users.json", (err, data) => {
+    if (err) {
+      next(err);
+      return;
+    }
+    const users = JSON.parse(data);
+    const { id } = req.params;
+    const userIndex = users.findIndex((user) => user.id === +id);
+    let user = users[userIndex];
+    if (!user) {
+      return res.send("User not found ya bro.");
+    }
+
+    const userData = {
+      index: userIndex,
+      body: {...user}
+    }
+
+    req.query.userData = userData
+
+    next()
+  });
+});
 
 route
-  .get("/", (req, res) => {
-    res.send(users);
+  .get("/", (req, res, next) => {
+    fs.readFile("./data/users.json", (err, data) => {
+      if (err) {
+        next(err);
+        return;
+      }
+      const users = JSON.parse(data);
+      res.send(users);
+    });
   })
 
-  .post("/", (req, res) => {
-    const newUser = {
-      id: Date.now(),
-      email: req.body.email,
-      password: req.body.password,
-    };
-    users.push(newUser);
-    fs.writeFileSync("./data/users.json", JSON.stringify(users, null, 2));
-    res.send("User created successfully.");
+  .post("/", (req, res, next) => {
+    fs.readFile("./data/users.json", (err, data) => {
+      if (err) {
+        next(err);
+        return;
+      }
+      const users = JSON.parse(data);
+
+      const newUser = {
+        id: Date.now(),
+        ...req.body,
+      };
+
+      users.push(newUser);
+      const usersString = JSON.stringify(users, null, 2);
+      fs.writeFile("./data/users.json", usersString, (err) => {
+        if (err) {
+          next(err);
+          return;
+        }
+      });
+      res.send("User created successfully.");
+    });
   });
 
 route
-  .get("/:id", (req, res) => {
-    const { id } = req.params;
-    const user = users.filter((user) => user.id === +id)[0];
-    if (!user) {
-      return res.send("User not found.");
-    }
-    res.send(user);
+  .get("/:id", (req, res, next) => {
+    fs.readFile("./data/users.json", (err, data) => {
+      if (err) {
+        next(err);
+        return;
+      }
+      
+      const user = req.query.userData.body
+      res.send(user);
+    });
   })
 
   .patch("/:id", (req, res) => {
-    const { id } = req.params;
-    const userToUpdateIndex = users.findIndex((user) => user.id === +id);
-    let userToUpdate = users[userToUpdateIndex];
+    fs.readFile("./data/users.json", (err, data) => {
+      if (err) {
+        next(err);
+        return;
+      }
+      const users = JSON.parse(data);
 
-    if (!userToUpdate) {
-      return res.send("User not found.");
-    }
+      const userToUpdateIndex = req.query.userData.index
+      let userToUpdate = req.query.userData.body
 
-    userToUpdate = {
-      ...userToUpdate,
-      ...req.body,
-    };
+      userToUpdate = {
+        ...userToUpdate,
+        ...req.body,
+      };
 
-    users.splice(userToUpdateIndex, 1, userToUpdate);
-    fs.writeFileSync("./data/users.json", JSON.stringify(users, null, 2));
-    res.send("User updated successfully.");
+      users.splice(userToUpdateIndex, 1, userToUpdate);
+      const usersString = JSON.stringify(users, null, 2);
+
+      fs.writeFile("./data/users.json", usersString, (err) => {
+        if (err) {
+          next(err);
+          return;
+        }
+      });
+      res.send("User updated successfully.");
+    });
   })
 
   .delete("/:id", (req, res) => {
-    const { id } = req.params;
-    const userToDeleteIndex = users.findIndex((user) => user.id === +id);
+    fs.readFile("./data/users.json", (err, data) => {
+      if (err) {
+        next(err);
+        return;
+      }
+      const users = JSON.parse(data);
 
-    if (!users[userToDeleteIndex]) {
-      return res.send("User not found.");
-    }
+      const userToDeleteIndex = req.query.userData.index
 
-    users.splice(userToDeleteIndex, 1);
-    fs.writeFileSync("./data/users.json", JSON.stringify(users, null, 2));
-    res.send("User deleted successfully.");
+      users.splice(userToDeleteIndex, 1);
+      const usersString = JSON.stringify(users, null, 2);
+
+      fs.writeFile("./data/users.json", usersString, (err) => {
+        if (err) {
+          next(err);
+          return;
+        }
+      });
+
+      res.send("User deleted successfully.");
+    });
   });
 
 module.exports = route;
