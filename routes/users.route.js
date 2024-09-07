@@ -1,12 +1,18 @@
 const express = require("express");
+
 const route = express.Router();
+
 const fs = require("node:fs");
+const path = require("node:path");
+
+const usersFilePath = path.join(__dirname, "../data/users.json");
 
 route.use("/:id", (req, res, next) => {
-  fs.readFile("./data/users.json", (err, data) => {
+  fs.readFile(usersFilePath, (err, data) => {
     if (err) {
-      next(err);
-      return;
+      const err = new Error("File not found");
+      err.statusCode = 404;
+      return next(err);
     }
     const users = JSON.parse(data);
     const { id } = req.params;
@@ -18,21 +24,23 @@ route.use("/:id", (req, res, next) => {
 
     const userData = {
       index: userIndex,
-      body: {...user}
-    }
+      body: { ...user },
+    };
 
-    req.query.userData = userData
+    req.userData = userData;
 
-    next()
+    next();
   });
 });
 
 route
   .get("/", (req, res, next) => {
-    fs.readFile("./data/users.json", (err, data) => {
+    fs.readFile(usersFilePath, (err, data) => {
       if (err) {
-        next(err);
-        return;
+        const err = new Error("File not found");
+        err.statusCode = 404;
+        console.log(err);
+        return next(err);
       }
       const users = JSON.parse(data);
       res.send(users);
@@ -40,10 +48,11 @@ route
   })
 
   .post("/", (req, res, next) => {
-    fs.readFile("./data/users.json", (err, data) => {
+    fs.readFile(usersFilePath, (err, data) => {
       if (err) {
-        next(err);
-        return;
+        const err = new Error("File not found");
+        err.statusCode = 404;
+        return next(err);
       }
       const users = JSON.parse(data);
 
@@ -54,7 +63,7 @@ route
 
       users.push(newUser);
       const usersString = JSON.stringify(users, null, 2);
-      fs.writeFile("./data/users.json", usersString, (err) => {
+      fs.writeFile(usersFilePath, usersString, (err) => {
         if (err) {
           next(err);
           return;
@@ -66,27 +75,29 @@ route
 
 route
   .get("/:id", (req, res, next) => {
-    fs.readFile("./data/users.json", (err, data) => {
+    fs.readFile(usersFilePath, (err, data) => {
       if (err) {
-        next(err);
-        return;
+        const err = new Error("File not found");
+        err.statusCode = 404;
+        return next(err);
       }
-      
-      const user = req.query.userData.body
+
+      const user = req.userData.body;
       res.send(user);
     });
   })
 
   .patch("/:id", (req, res) => {
-    fs.readFile("./data/users.json", (err, data) => {
+    fs.readFile(usersFilePath, (err, data) => {
       if (err) {
-        next(err);
-        return;
+        const err = new Error("File not found");
+        err.statusCode = 404;
+        return next(err);
       }
       const users = JSON.parse(data);
 
-      const userToUpdateIndex = req.query.userData.index
-      let userToUpdate = req.query.userData.body
+      const userToUpdateIndex = req.userData.index;
+      let userToUpdate = req.userData.body;
 
       userToUpdate = {
         ...userToUpdate,
@@ -96,7 +107,7 @@ route
       users.splice(userToUpdateIndex, 1, userToUpdate);
       const usersString = JSON.stringify(users, null, 2);
 
-      fs.writeFile("./data/users.json", usersString, (err) => {
+      fs.writeFile(usersFilePath, usersString, (err) => {
         if (err) {
           next(err);
           return;
@@ -107,19 +118,20 @@ route
   })
 
   .delete("/:id", (req, res) => {
-    fs.readFile("./data/users.json", (err, data) => {
+    fs.readFile(usersFilePath, (err, data) => {
       if (err) {
-        next(err);
-        return;
+        const err = new Error("File not found");
+        err.statusCode = 404;
+        return next(err);
       }
       const users = JSON.parse(data);
 
-      const userToDeleteIndex = req.query.userData.index
+      const userToDeleteIndex = req.userData.index;
 
       users.splice(userToDeleteIndex, 1);
       const usersString = JSON.stringify(users, null, 2);
 
-      fs.writeFile("./data/users.json", usersString, (err) => {
+      fs.writeFile(usersFilePath, usersString, (err) => {
         if (err) {
           next(err);
           return;

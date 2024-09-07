@@ -17,13 +17,18 @@ app.use(morgan("combined"));
 
 app.use("/users", usersRoute);
 
+//global error handler
 app.use((err, req, res, next) => {
-  console.log("Error ocurred:- ", err)
-  const statusCode = err.statusCode || 500
-  res.status(statusCode)
-  res.send("Something went wrong!!!")
+  console.log("Error ocurred:- ", err);
 
-})
+  const statusCode = err?.statusCode || 500;
+  const errorMessage = err?.message || "Internal Server Error.";
+
+  res.status(statusCode).send({
+    status: statusCode,
+    message: errorMessage,
+  });
+});
 
 app.listen(port, () =>
   console.log(`Server running on http://localhost:${port}`)
